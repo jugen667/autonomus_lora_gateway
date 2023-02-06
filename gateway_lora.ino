@@ -27,6 +27,7 @@ void initDHT(){
 }
 
 void setup() {
+  pinMode(A1, INPUT) ;
   initDHT();
   modem.begin(EU868);
   delay(1000); 
@@ -64,25 +65,14 @@ void loop() {
     modem.beginPacket();
     temperature *= 100;
     humidity*=100;
+    short batterie = (((((3.3*resultBinary/1024)/1.02)*352/82)-11.1)/1.6)*100;
     modem.write((short) temperature);
     modem.write((short) humidity); 
     modem.write((short) ina219.getPower_mW());
-    modem.write((short) ((resultBinary/1023)*100));
+    modem.write(batterie);
     err = modem.endPacket();
-    if ( err <= 0 ) {
-      err_count++;
-      if ( err_count > 50 ) {
-        connected = false;
-      }
-      // wait for 2min for duty cycle with SF12 - 1.5s frame
-      for ( int i = 0 ; i < 120 ; i++ ) {
-        delay(1000);
-      }
-     } 
-     else {
-        err_count = 0;
-        // wait for 5min
-        delay(300000);
-     }
+    err_count = 0;
+    // wait for 5min
+    delay(300000);
    }
 }
